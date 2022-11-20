@@ -1,1 +1,1 @@
-# compound-dataset-loans
+# compound-loans-dataset
