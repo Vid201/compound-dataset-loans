@@ -1,48 +1,49 @@
-export const repayEvents =
-    `
-query RepayEvents {
-    repayEvents(where: { blockNumber_gte: 11571288, blockNumber_lte: 11623430 }, orderBy: blockNumber, orderDirection: asc) {
-      id,
+export const repayEventsQuery = (start_block_number, end_block_number) => {
+    return `
+query {
+    repayEvents(where: { blockNumber_gte: ${start_block_number}, blockNumber_lte: ${end_block_number} }, orderBy: blockNumber, orderDirection: asc) {
       amount
-      accountBorrows
       borrower
       blockNumber
       blockTime
       underlyingSymbol
-      payer
     }
   }
-`
+` }
     ;
 
-export const liquidationEvents = ``;
+export const liquidationEventsQuery = (start_block_number, end_block_number) => {
+    return `
+query {
+    liquidationEvents(where: { blockNumber_gte: ${start_block_number}, blockNumber_lte: ${end_block_number} }, orderBy: blockNumber, orderDirection: asc) {
+      amount
+      from
+      blockNumber
+      blockTime
+      underlyingSymbol
+    }
+  }
+` }
+    ;
+
+export const borrowEventsQuery = (borrower, underlyingSymbol, blockNumber) => {
+    return `
+query {
+    borrowEvents(where: { borrower: "${borrower}", underlyingSymbol: "${underlyingSymbol}", blockNumber_lte: ${blockNumber} }, orderBy: blockNumber, orderDirection: desc) {
+      amount
+      accountBorrows
+      blockTime
+    }
+  }
+
+` };
 
 export const getMarketQuery = (blockNumber, underlyingSymbol) => {
     return `
     query {
         markets(block: { number: ${blockNumber}}, where: { underlyingSymbol: "${underlyingSymbol}"}) {
-          borrowRate
-          cash
-          collateralFactor
-          exchangeRate
-          interestRateModelAddress
-          name
-          reserves
-          supplyRate
-          symbol
-          id
-          totalBorrows
-          totalSupply
-          underlyingAddress
           underlyingName
-          underlyingPrice
-          underlyingSymbol
-          accrualBlockNumber
-          blockTimestamp
-          borrowIndex
-          reserveFactor
           underlyingPriceUSD
-          underlyingDecimals
         }
       }
     `
