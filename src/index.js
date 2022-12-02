@@ -1,4 +1,8 @@
-import axios from "axios";
+import fetch from 'node-fetch';
+if (!globalThis.fetch) {
+    globalThis.fetch = fetch;
+}
+
 import { createClient } from 'urql';
 import { THE_GRAPH_API_URL, COMPOUND_CTOKEN_API_URL, CSV_PATH, WAIT_TIME } from './config.js';
 import { repayEventsQuery, liquidationEventsQuery, borrowEventsQuery, getMarketQuery } from './queries.js';
@@ -54,24 +58,23 @@ for (let e = 0; e < eventTypes.length; e++) {
 
         const event = events[e].data[eventTypes[e]][i];
 
-        let res;
-        try {
-            res = await axios.get(COMPOUND_CTOKEN_API_URL(event.blockNumber));
-        } catch (error) {
-            console.log(error);
+        const res = await fetch(COMPOUND_CTOKEN_API_URL(event.blockNumber));
+        const data = await res.json();
+
+        if (typeof data.errors !== 'undefined' && data.errors !== null) {
+            console.log(`${e}:${i}/${events[e].data[eventTypes[e]].length}: error`);
             i -= 1;
             continue;
         }
 
-        const cTokens = res.data.cToken;
+        const cTokens = data.cToken;
 
         const cToken = filterCTokens(cTokens, event.underlyingSymbol);
 
-        let marketPromise;
-        try {
-            marketPromise = await client.query(getMarketQuery(event.blockNumber, event.underlyingSymbol)).toPromise();
-        } catch (error) {
-            console.log(error);
+        const marketPromise = await client.query(getMarketQuery(event.blockNumber, event.underlyingSymbol)).toPromise();
+
+        if (typeof marketPromise.data === 'undefined' || marketPromise.data === null) {
+            console.log(`${e}:${i}/${events[e].data[eventTypes[e]].length}: error`);
             i -= 1;
             continue;
         }
@@ -81,11 +84,10 @@ for (let e = 0; e < eventTypes.length; e++) {
         const priceCoinInUSD = market.underlyingPriceUSD;
         const priceCoinInETH = cToken['underlying_price'].value;
 
-        let borrowEventsPromise;
-        try {
-            borrowEventsPromise = await client.query(borrowEventsQuery(Object.hasOwn(event, 'borrower') ? event.borrower : event.from, event.underlyingSymbol, event.blockNumber)).toPromise();
-        } catch (error) {
-            console.log(error);
+        const borrowEventsPromise = await client.query(borrowEventsQuery(Object.hasOwn(event, 'borrower') ? event.borrower : event.from, event.underlyingSymbol, event.blockNumber)).toPromise();
+
+        if (typeof borrowEventsPromise.data === 'undefined' || borrowEventsPromise.data === null) {
+            console.log(`${e}:${i}/${events[e].data[eventTypes[e]].length}: error`);
             i -= 1;
             continue;
         }
