@@ -1,7 +1,7 @@
-export const repayEventsQuery = (start_block_number, end_block_number) => {
+export const repayEventsQuery = (start_block_number, end_block_number, skip) => {
     return `
 query {
-    repayEvents(where: { blockNumber_gte: ${start_block_number}, blockNumber_lte: ${end_block_number} }, orderBy: blockNumber, orderDirection: asc) {
+    repayEvents(skip: ${skip}, where: { blockNumber_gte: ${start_block_number}, blockNumber_lte: ${end_block_number} }, orderBy: blockNumber, orderDirection: asc) {
       amount
       borrower
       blockNumber
@@ -12,10 +12,10 @@ query {
 ` }
     ;
 
-export const liquidationEventsQuery = (start_block_number, end_block_number) => {
+export const liquidationEventsQuery = (start_block_number, end_block_number, skip) => {
     return `
 query {
-    liquidationEvents(where: { blockNumber_gte: ${start_block_number}, blockNumber_lte: ${end_block_number} }, orderBy: blockNumber, orderDirection: asc) {
+    liquidationEvents(skip: ${skip}, where: { blockNumber_gte: ${start_block_number}, blockNumber_lte: ${end_block_number} }, orderBy: blockNumber, orderDirection: asc) {
       amount
       from
       blockNumber
@@ -38,7 +38,7 @@ query {
 
 ` };
 
-export const getMarketQuery = (blockNumber, underlyingSymbol) => {
+export const marketsQuery = (blockNumber, underlyingSymbol) => {
     return `
     query {
         markets(block: { number: ${blockNumber}}, where: { underlyingSymbol: "${underlyingSymbol}"}) {
