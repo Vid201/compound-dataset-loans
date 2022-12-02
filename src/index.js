@@ -75,7 +75,15 @@ while (true) {
             const event = events[e].data[eventTypes[e]][i];
 
             const res = await fetch(COMPOUND_CTOKEN_API_URL(event.blockNumber));
-            const data = await res.json();
+
+            let data;
+            try {
+                data = await res.json();
+            } catch (error) {
+                console.log(`${e}:${i}/${events[e].data[eventTypes[e]].length}: error`);
+                i -= 1;
+                continue;
+            }
 
             if (typeof data.errors !== 'undefined' && data.errors !== null) {
                 console.log(`${e}:${i}/${events[e].data[eventTypes[e]].length}: error`);
