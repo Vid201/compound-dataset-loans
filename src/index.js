@@ -45,11 +45,11 @@ const dataFields = [
 ];
 fs.writeFileSync(CSV_PATH, dataFields.join(',') + '\n', 'utf-8', (_) => { });
 
-let skip = 0;
+let skips = [0, 0];
 
 while (true) {
     await new Promise(r => setTimeout(r, WAIT_TIME));
-    const repayEvents = await client.query(repayEventsQuery(start_block_time, end_block_time, skip)).toPromise();
+    const repayEvents = await client.query(repayEventsQuery(start_block_time, end_block_time, skips[0])).toPromise();
 
     if (typeof repayEvents.data === 'undefined' || repayEvents.data === null) {
         console.log(`repayEvents error`);
@@ -57,16 +57,16 @@ while (true) {
     }
 
     await new Promise(r => setTimeout(r, WAIT_TIME));
-    const liquidationEvents = await client.query(liquidationEventsQuery(start_block_time, end_block_time, skip)).toPromise();
+    const liquidationEvents = await client.query(liquidationEventsQuery(start_block_time, end_block_time, skips[1])).toPromise();
+
+    const eventTypes = ['repayEvents', 'liquidationEvents'];
+    const events = [repayEvents, liquidationEvents];
+    const eventNames = ['Repay', 'Liquidation'];
 
     if (typeof liquidationEvents.data === 'undefined' || liquidationEvents.data === null) {
         console.log(`liquidationEvents error`);
         continue;
     }
-
-    const eventTypes = ['repayEvents', 'liquidationEvents'];
-    const events = [repayEvents, liquidationEvents];
-    const eventNames = ['Repay', 'Liquidation'];
 
     for (let e = 0; e < eventTypes.length; e++) {
         for (let i = 0; i < events[e].data[eventTypes[e]].length; i++) {
@@ -74,10 +74,9 @@ while (true) {
 
             const event = events[e].data[eventTypes[e]][i];
 
-            const res = await fetch(COMPOUND_CTOKEN_API_URL(event.blockNumber));
-
             let data;
             try {
+                const res = await fetch(COMPOUND_CTOKEN_API_URL(event.blockNumber));
                 data = await res.json();
             } catch (error) {
                 console.log(`${e}:${i}/${events[e].data[eventTypes[e]].length}: error`);
@@ -163,11 +162,10 @@ while (true) {
 
     for (let e = 0; e < eventTypes.length; e++) {
         counter += events[e].data[eventTypes[e]].length;
+        skips[e] += events[e].data[eventTypes[e]].length;
     }
 
     if (counter === 0) {
         break;
     }
-
-    skip += 100;
 }
