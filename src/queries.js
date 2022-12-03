@@ -1,7 +1,7 @@
-export const repayEventsQuery = (start_block_number, end_block_number, skip) => {
+export const repayEventsQuery = (start_block_number, end_block_number) => {
     return `
 query {
-    repayEvents(skip: ${skip}, where: { blockNumber_gte: ${start_block_number}, blockNumber_lte: ${end_block_number} }, orderBy: blockNumber, orderDirection: asc) {
+    repayEvents(where: { blockNumber_gte: ${start_block_number}, blockNumber_lte: ${end_block_number} }, orderBy: blockNumber, orderDirection: asc) {
       amount
       borrower
       blockNumber
@@ -12,10 +12,10 @@ query {
 ` }
     ;
 
-export const liquidationEventsQuery = (start_block_number, end_block_number, skip) => {
+export const liquidationEventsQuery = (start_block_number, end_block_number) => {
     return `
 query {
-    liquidationEvents(skip: ${skip}, where: { blockNumber_gte: ${start_block_number}, blockNumber_lte: ${end_block_number} }, orderBy: blockNumber, orderDirection: asc) {
+    liquidationEvents(where: { blockNumber_gte: ${start_block_number}, blockNumber_lte: ${end_block_number} }, orderBy: blockNumber, orderDirection: asc) {
       amount
       from
       blockNumber

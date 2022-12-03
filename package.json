@@ -5,7 +5,7 @@
     "type": "module",
     "scripts": {
         "get-block-date": "node src/block-date.js $npm_config_date",
-        "start": "node src/index.js $npm_config_start_block_number $npm_config_end_block_number"
+        "start": "node src/index.js $npm_config_start_block_number_repay $npm_config_end_block_number_repay $npm_config_start_block_number_liquidation $npm_config_end_block_number_liquidation"
     },
     "keywords": [],
     "author": "Vid Kersic",

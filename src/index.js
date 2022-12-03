@@ -10,8 +10,10 @@ import { filterCTokens } from './utils.js';
 import * as fs from 'fs';
 import moment from 'moment';
 
-const start_block_time = process.argv[2];
-const end_block_time = process.argv[3];
+const start_block_number_repay = process.argv[2];
+const end_block_number_repay = process.argv[3];
+const start_block_number_liquidation = process.argv[4];
+const end_block_number_liquidation = process.argv[5];
 
 const client = createClient({
     url: THE_GRAPH_API_URL,
@@ -45,11 +47,12 @@ const dataFields = [
 ];
 fs.writeFileSync(CSV_PATH, dataFields.join(',') + '\n', 'utf-8', (_) => { });
 
-let skips = [0, 0];
+let start_block_numbers = [start_block_number_repay, start_block_number_liquidation];
+const end_block_numbers = [end_block_number_repay, end_block_number_liquidation];
 
 while (true) {
     await new Promise(r => setTimeout(r, WAIT_TIME));
-    const repayEvents = await client.query(repayEventsQuery(start_block_time, end_block_time, skips[0])).toPromise();
+    const repayEvents = await client.query(repayEventsQuery(start_block_numbers[0], end_block_numbers[0])).toPromise();
 
     if (typeof repayEvents.data === 'undefined' || repayEvents.data === null) {
         console.log(`repayEvents error`);
@@ -57,16 +60,16 @@ while (true) {
     }
 
     await new Promise(r => setTimeout(r, WAIT_TIME));
-    const liquidationEvents = await client.query(liquidationEventsQuery(start_block_time, end_block_time, skips[1])).toPromise();
-
-    const eventTypes = ['repayEvents', 'liquidationEvents'];
-    const events = [repayEvents, liquidationEvents];
-    const eventNames = ['Repay', 'Liquidation'];
+    const liquidationEvents = await client.query(liquidationEventsQuery(start_block_numbers[1], end_block_numbers[1])).toPromise();
 
     if (typeof liquidationEvents.data === 'undefined' || liquidationEvents.data === null) {
         console.log(`liquidationEvents error`);
         continue;
     }
+
+    const eventTypes = ['repayEvents', 'liquidationEvents'];
+    const events = [repayEvents, liquidationEvents];
+    const eventNames = ['Repay', 'Liquidation'];
 
     for (let e = 0; e < eventTypes.length; e++) {
         for (let i = 0; i < events[e].data[eventTypes[e]].length; i++) {
@@ -162,7 +165,10 @@ while (true) {
 
     for (let e = 0; e < eventTypes.length; e++) {
         counter += events[e].data[eventTypes[e]].length;
-        skips[e] += events[e].data[eventTypes[e]].length;
+
+        if (events[e].data[eventTypes[e]].length > 0) {
+            start_block_numbers[e] = events[e].data[eventTypes[e]][events[e].data[eventTypes[e]].length - 1].blockNumber + 1;
+        }
     }
 
     if (counter === 0) {
