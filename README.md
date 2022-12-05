@@ -18,8 +18,8 @@ Convert date to block number (repeat for start date and end date):
 yarn run get-block-date 01/01/2020
 ```
 
-Start getting the data (enter start and end block number retrieved in the previous step):
+Start fetching the data (enter start and end block number retrieved in the previous step):
 
 ```bash
-yarn start 9193042 10966307
+yarn start 9193042 10966307 9193042 10966307
 ```

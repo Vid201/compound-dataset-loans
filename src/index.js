@@ -80,6 +80,11 @@ while (true) {
             let data;
             try {
                 const res = await fetch(COMPOUND_CTOKEN_API_URL(event.blockNumber));
+
+                if (res.status === 500) {
+                    continue;
+                }
+
                 data = await res.json();
             } catch (error) {
                 console.log(`${e}:${i}/${events[e].data[eventTypes[e]].length}: error`);
